@@ -128,8 +128,10 @@ static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16
 {
     esp_err_t err = ESP_OK;
 
+    ESP_LOGI(TAG, "app_attribute_update_cb start");
     if (type == PRE_UPDATE) {
         /* Driver update */
+        ESP_LOGI(TAG, "going to app_driver_attribute_update");
         app_driver_handle_t driver_handle = (app_driver_handle_t)priv_data;
         err = app_driver_attribute_update(driver_handle, endpoint_id, cluster_id, attribute_id, val);
     }

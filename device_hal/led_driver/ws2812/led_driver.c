@@ -17,6 +17,8 @@
 #include <led_strip.h>
 #include <led_driver.h>
 
+#define LED_STRIP_NUM 7
+
 static const char *TAG = "led_driver_ws2812";
 static bool current_power = false;
 static uint8_t current_brightness = 0;
@@ -41,7 +43,8 @@ led_driver_handle_t led_driver_init(led_driver_config_t *config)
         return NULL;
     }
 
-    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(1, (led_strip_dev_t)rmt_cfg.channel);
+    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(LED_STRIP_NUM, (led_strip_dev_t)rmt_cfg.channel);
+    ESP_LOGI(TAG, "strip_config inited with max_leds:%" PRIu32, strip_config.max_leds);
     led_strip_t *strip = led_strip_new_rmt_ws2812(&strip_config);
     if (!strip) {
         ESP_LOGE(TAG, "W2812 driver install failed");
@@ -59,15 +62,21 @@ esp_err_t led_driver_set_power(led_driver_handle_t handle, bool power)
 esp_err_t led_driver_set_RGB(led_driver_handle_t handle)
 {
     esp_err_t err = ESP_OK;
+    int idx;
+
     if (!handle) {
         ESP_LOGE(TAG, "led driver handle cannot be NULL");
         err = ESP_FAIL;
     } else {
         led_strip_t *strip = (led_strip_t *)handle;
-        err = strip->set_pixel(strip, 0, mRGB.red, mRGB.green, mRGB.blue);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "strip_set_pixel failed");
-            return err;
+
+        for( idx=0 ; idx<LED_STRIP_NUM ; idx++ )
+        {
+            err = strip->set_pixel(strip, idx, mRGB.red, mRGB.green, mRGB.blue);
+            if (err != ESP_OK) {
+                ESP_LOGE(TAG, "strip_set_pixel %d failed", idx);
+                return err;
+            }
         }
         ESP_LOGI(TAG, "led set r:%d, g:%d, b:%d", mRGB.red, mRGB.green, mRGB.blue);
         err = strip->refresh(strip, 100);
@@ -80,6 +89,14 @@ esp_err_t led_driver_set_RGB(led_driver_handle_t handle)
 
 esp_err_t led_driver_set_brightness(led_driver_handle_t handle, uint8_t brightness)
 {
+    const uint8_t max_brightness = 200;
+    ESP_LOGI(TAG, "led_driver_set_brightness with current_brightness %d, brightness %d", current_brightness, brightness);
+
+    if( brightness > max_brightness )
+    {
+        brightness = max_brightness;
+    }
+
     if (brightness != 0) {
         current_brightness = brightness;
     }

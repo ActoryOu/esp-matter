@@ -25,12 +25,14 @@ extern uint16_t light_endpoint_id;
 /* Do any conversions/remapping for the actual value here */
 static esp_err_t app_driver_light_set_power(led_driver_handle_t handle, esp_matter_attr_val_t *val)
 {
+    ESP_LOGI(TAG, "calling app_driver_light_set_power");
     return led_driver_set_power(handle, val->val.b);
 }
 
 static esp_err_t app_driver_light_set_brightness(led_driver_handle_t handle, esp_matter_attr_val_t *val)
 {
     int value = REMAP_TO_RANGE(val->val.u8, MATTER_BRIGHTNESS, STANDARD_BRIGHTNESS);
+    ESP_LOGI(TAG, "calling app_driver_light_set_brightness");
     return led_driver_set_brightness(handle, value);
 }
 
@@ -74,6 +76,7 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
                                       uint32_t attribute_id, esp_matter_attr_val_t *val)
 {
     esp_err_t err = ESP_OK;
+    ESP_LOGI(TAG, "calling app_driver_attribute_update with endpoint id %u, cluster id %lu, attr_id %lu", endpoint_id, cluster_id, attribute_id);
     if (endpoint_id == light_endpoint_id) {
         led_driver_handle_t handle = (led_driver_handle_t)driver_handle;
         if (cluster_id == OnOff::Id) {

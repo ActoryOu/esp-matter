@@ -59,17 +59,26 @@ led_driver_handle_t led_driver_init(led_driver_config_t *config)
 
 esp_err_t led_driver_set_power(led_driver_handle_t handle, bool power)
 {
+    ESP_LOGI(TAG, "led_driver_set_power %s", power==true? "ON":"OFF");
     current_power = power;
     return led_driver_set_brightness(handle, current_brightness);
 }
 
 esp_err_t led_driver_set_brightness(led_driver_handle_t handle, uint8_t brightness)
 {
+    ESP_LOGI(TAG, "led_driver_set_brightness with current_brightness %d, brightness %d", current_brightness, brightness);
+    const max_brightness = 80;
+
     esp_err_t err;
     int channel = (int)handle - 1;
     if (channel < 0) {
         ESP_LOGE(TAG, "Invalid handle");
         return ESP_ERR_INVALID_ARG;
+    }
+
+    if( brightness > max_brightness )
+    {
+        brightness = max_brightness;
     }
 
     if (brightness != 0) {
